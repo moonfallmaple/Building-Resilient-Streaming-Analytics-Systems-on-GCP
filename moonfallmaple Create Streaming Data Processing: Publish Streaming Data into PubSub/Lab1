@@ -1,1 +1,52 @@
 
+Task 1: Preparation
+ls /training
+## Download Code Repository
+git clone https://github.com/GoogleCloudPlatform/training-data-analyst
+## Identify a project
+export DEVSHELL_PROJECT_ID=$(gcloud config get-value project)
+
+Task 2: Create Pub/Sub topic and subscription
+## Create your topic and publish a simple message.
+gcloud pubsub topics create sandiego
+## Publish a simple message.
+gcloud pubsub topics publish sandiego --message "hello"
+
+## Create a subscription for the topic.
+gcloud pubsub subscriptions create --topic sandiego mySub1
+
+##Pull the first message that was published to your topic.
+gcloud pubsub subscriptions pull --auto-ack mySub1
+
+##Try to publish another message and then pull it using the subscription
+gcloud pubsub topics publish sandiego --message "hello again"
+gcloud pubsub subscriptions pull --auto-ack mySub1
+
+##In the training-vm SSH terminal, cancel your subscription.
+gcloud pubsub subscriptions delete mySub1
+
+Task 3: Simulate traffic sensor data into Pub/Sub
+## Explore the python script to simulate San Diego traffic sensor data. Do not make any changes to the code.
+cd ~/training-data-analyst/courses/streaming/publish
+nano send_sensor_data.py
+
+## Download the traffic simulation dataset.
+./download_data.sh
+
+## Run the send_sensor_data.py
+./send_sensor_data.py --speedFactor=60 --project $DEVSHELL_PROJECT_ID
+This command simulates sensor data by sending recorded sensor data via Pub/Sub messages. The script extracts the original time of the sensor data and pauses between sending each message to simulate realistic timing of the sensor data. The value speedFactor changes the time between messages proportionally. So a speedFactor of 60 means "60 times faster" than the recorded timing. It will send about an hour of data every 60 seconds.
+
+Leave this terminal open and the simulator running.
+
+## Task 4: Verify that messages are received
+
+cd ~/training-data-analyst/courses/streaming/publish
+
+gcloud pubsub subscriptions create --topic sandiego mySub2
+gcloud pubsub subscriptions pull --auto-ack mySub2
+##Confirm that you see a message with traffic sensor information.
+
+##Cancel this subscription.
+gcloud pubsub subscriptions delete mySub2
+##Task 4: Verify that messages are received
